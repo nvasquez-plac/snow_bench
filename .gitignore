@@ -1,2 +1,6 @@
 /data_snow_bench
 .DS_Store
+/3_prep_data/__pycache__
+/4_compute_score/__pycache__
+/eval
+eval_html

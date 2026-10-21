@@ -3,22 +3,22 @@
 #
     
 # Directory containining the evaluation package
-dir_git = '/home/vvi001/scripts/eval_snow/snow_bench'
+dir_git = '/Users/nvasquez/Github/snow_bench'
 
 # Directory for analysis outputs (figures, etc.)
-dir_analysis = '/home/vvi001/store8/snow_bench/eval'
+dir_analysis = '/Users/nvasquez/Github/snow_bench/eval'
 
 # Path to public html to create http links to visualizes time series and scores.
-dir_html = '/home/vvi001/public_html/eval_snow_visu/snow_bench'
+dir_html = '/Users/nvasquez/Github/snow_bench/eval_html'  # must NOT exist yet: plot_time_series_snow.py creates it as a symlink to dir_analysis/snow
 
 # File containing the elevation field
-fic_geo_all = '/home/vvi001/store8/snow_bench/sample_svs2/geophy_svs2.nc'
+fic_geo_all = '/Users/nvasquez/Github/snow_bench/data_snow_bench/sample_svs2/geophy_svs2.nc'
 
 
 # Dictionary containg the information for each experiment (identified by a given ID)
 cfg_exp = {
     'SVS2':{
-         'dir_outall':'/home/vvi001/store8/snow_bench/sample_svs2',# Directory where are stored the snow variables
+         'dir_outall':'/Users/nvasquez/Github/snow_bench/data_snow_bench/sample_svs2',# Directory where are stored the snow variables
          'fic_geo':fic_geo_all, # Path to the corresponding geophysical information (elevation) 
          'var_geo':'MF',        # Name of the variable used to find the evlevation in the geophysical file
          'offset':6,            # Time offset applied to the simulated data to make sure that they match the time of the snow data (18 UTC) 
@@ -26,7 +26,8 @@ cfg_exp = {
          'col':'blue', # Color used in the graphics.
 },
 
-    'ERA5L':{'dir_in':'/home/vvi001/store8/Eval_Data/ERA5_Land', # Directory containing the model outputs
+    'ERA5L':{'dir_in':'/Users/nvasquez/Github/snow_bench/data_snow_bench/sample_era5l', # Directory containing the model outputs
+         # TODO: topo_era5land_NorAm.nc is not in the sample data; get it from Vincent before running 3_extract_era5_snow.py
          'fic_geo':'/home/vvi001/store8/Eval_Data/ERA5_Land/Topo/topo_era5land_NorAm.nc', # Path to the corresponding geophysical information (elevation)
          'offset':6, # Time offset applied to the simulated data to make sure that they match the time of the snow data (18 UTC) 
          'var_geo':'z',  # Name of the variable used to find the elevation in the geophysical file

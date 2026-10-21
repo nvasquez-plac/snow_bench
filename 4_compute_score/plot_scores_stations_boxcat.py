@@ -1,4 +1,7 @@
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 import numpy as np
 import xarray as xr
 import pdb,os,sys 
@@ -8,7 +11,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import argparse
 import util_score as util
-from importlib.machinery import SourceFileLoader
+import runpy
+from types import SimpleNamespace
 
 
 parser = argparse.ArgumentParser(description="Plot boxplot of of scores for different categories of elevation, tpi, ... within a given region")
@@ -37,7 +41,7 @@ args = parser.parse_args()
 configfile = args.configfile
 
 # Load in configuration file as module
-X = SourceFileLoader('', configfile).load_module()
+X = SimpleNamespace(**runpy.run_path(configfile))  # load_module() was removed in Python 3.15
 cfg_exp = X.cfg_exp
 
 #Reference Directory
@@ -114,7 +118,7 @@ for icat, alti in enumerate(cat):
 # Load config file
 config_snow = X.dir_git+"/1_config/config_snow.py"
 # Load info in config file
-X2 = SourceFileLoader('', config_snow).load_module()
+X2 = SimpleNamespace(**runpy.run_path(config_snow))  # load_module() was removed in Python 3.15
 
 if(args.list_score is None):
     list_score=['bias','stde','rmse']

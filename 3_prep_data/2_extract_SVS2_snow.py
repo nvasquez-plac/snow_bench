@@ -1,4 +1,7 @@
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 from os import environ
 import pdb
 import os, sys, glob 
@@ -6,7 +9,8 @@ import numpy as np
 import pandas as pd 
 import datetime as dt 
 import xarray as xr
-from importlib.machinery import SourceFileLoader
+import runpy
+from types import SimpleNamespace
 import argparse
 import util_extract as ext
 from joblib import Parallel, delayed
@@ -25,7 +29,7 @@ args = parser.parse_args()
 configfile = args.configfile
 
 # Load in configuration file as module
-X = SourceFileLoader('', configfile).load_module()
+X = SimpleNamespace(**runpy.run_path(configfile))  # load_module() was removed in Python 3.15
 cfg_exp = X.cfg_exp
 
 # List of experiments of interest
@@ -49,7 +53,7 @@ dir_store_snow = dir_eval + '/snow_data'
 # Load config file
 config_snow = X.dir_git + "/1_config/config_snow.py"
 # Load info in config file
-X2 = SourceFileLoader('', config_snow).load_module()
+X2 = SimpleNamespace(**runpy.run_path(config_snow))  # load_module() was removed in Python 3.15
 
 # Open file containing snow variables
 netcdf_file_in = os.path.join(dir_store_snow, 'snow_data.nc')
@@ -70,8 +74,9 @@ def process_single_year(yy, exp, exp_config, list_var, list_var_mod, str_var,
         print(f"[{exp}][Year {yy}] Starting processing")
         
         # Load config module in this process
-        from importlib.machinery import SourceFileLoader
-        X2 = SourceFileLoader('', config_snow_path).load_module()
+        import runpy
+        from types import SimpleNamespace
+        X2 = SimpleNamespace(**runpy.run_path(config_snow_path))  # load_module() was removed in Python 3.15
         
         # Load observations in this process
         data_obs = xr.open_dataset(netcdf_file_in)

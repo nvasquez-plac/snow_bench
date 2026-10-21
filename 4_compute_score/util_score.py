@@ -1,8 +1,14 @@
 import numpy as np
-import rpnpy.librmn.all as rmn
+try:
+    import rpnpy.librmn.all as rmn  # ECCC lib, not available on macOS
+except ImportError:
+    rmn = None
 import matplotlib.path as mplPath
 import pdb
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 import xarray as xr
 import datetime as dt 
 import calendar
@@ -406,7 +412,7 @@ def plot_histo(list_score,rest,var,X2,X,fig_name,per):
                 bb1 = ax.ravel()[iscore].bar(ireg-w + iexp*w, val,width=0.95*w,color=cfg_exp[str(exp.values)]['col'],label = exp.values)
 
                 if(iscore==0 and iexp==0):
-                      nob = rest['nobs'].loc[dict(exp=exp,domain=reg)]
+                      nob = rest['nobs'].loc[dict(exp=exp,domain=reg)].values.ravel()[0]
                       if(np.isnan(nob)):
                            nob =0
                       ax.ravel()[iscore].text(ireg,max_t+0.03*(max_t-min_t), int(nob),{'fontsize':8,'color':'black','style':'italic'},horizontalalignment='center',verticalalignment='center')
@@ -525,9 +531,9 @@ def plot_histo_comb(list_score,res_man,res_auto,var,X2,X,fig_name,per,lsuper):
                       txt = add_comma(int(nob.values[0]))#str(int(nob))
                       if(lsuper):
                           if(reg in res_all['auto'].domain):
-                             nob2 = res_all['auto']['nobs'].loc[dict(exp=exp,domain=reg)]
+                             nob2 = res_all['auto']['nobs'].loc[dict(exp=exp,domain=reg)].values.ravel()[0]
                              if(np.isnan(nob2)): nob2 =0
-                             txt = str(int(nob))+'/'+str(int(nob2))
+                             txt = str(int(nob.values[0]))+'/'+str(int(nob2))
 
                       ax.ravel()[iplot].text(ireg,max_t+0.03*(max_t-min_t), txt,{'fontsize':8,'color':'black','style':'italic'},horizontalalignment='center',verticalalignment='center')
                    
@@ -1268,10 +1274,10 @@ def plot_score_card(list_score,res_man,res_auto,var,X,X2,fig_name,exp_ref, exp_c
              tab_score[ireg,iscore*2+it] = np.nan # Default value
 
              if(reg in res_all[tt].domain):
-               nobs = res_all[tt]['nobs'].loc[dict(domain=reg,exp=exp_ref)]
-               sco_norm = res_all[tt]['rmse'].loc[dict(domain=reg,exp=exp_ref)]
-               sco_ref = res_all[tt][score].loc[dict(domain=reg,exp=exp_ref)]
-               sco_comp = res_all[tt][score].loc[dict(domain=reg,exp=exp_comp)]
+               nobs = res_all[tt]['nobs'].loc[dict(domain=reg,exp=exp_ref)].values.ravel()[0]
+               sco_norm = res_all[tt]['rmse'].loc[dict(domain=reg,exp=exp_ref)].values.ravel()[0]
+               sco_ref = res_all[tt][score].loc[dict(domain=reg,exp=exp_ref)].values.ravel()[0]
+               sco_comp = res_all[tt][score].loc[dict(domain=reg,exp=exp_comp)].values.ravel()[0]
                if(score=='bias' or score=='pbias'):
                  comp = - (np.abs(sco_comp)-np.abs(sco_ref))/np.abs(sco_norm) *100. 
                 # pdb.set_trace()
@@ -2173,7 +2179,7 @@ def emetDomain(name):
     elif name == 'South_CLIM':
         coord = ((38.5,-93.5),(38.5,-91.5),(38,-91.5),(38,-90.5),(37.5,-90.5),(37.5,-89.5),(37,-89.5),(37,-87.5),(36.5,-87.5),(36.5,-87),(36,-87),(36,-86),(35.5,-86),(35.5,-85.5),(35,-85.5),(35,-85),(34,-85),(34,-84.5),(33.5,-84.5),(33.5,-84),(32.5,-84),(32.5,-82),(33,-82),(33,-81.5),(33.5,-81.5),(33.5,-81),(34,-81),(34,-80.5),(34.5,-80.5),(34.5,-80),(35,-80),(35,-79.5),(34.5,-79.5),(34.5,-79),(34,-79),(34,-78.5),(33.5,-78.5),(33.5,-79),(33,-79),(33,-79.5),(32.5,-79.5),(32.5,-80),(32,-80),(32,-80.5),(32,-81),(31,-81),(31,-81.5),(29.5,-81.5),(29.5,-81),(29,-81),(29,-80.5),(27.5,-80.5),(27.5,-80),(25,-80),(25,-80.5),(24.5,-80.5),(24.5,-82),(25.5,-82),(25.5,-82.5),(26,-82.5),(26,-83),(27,-83),(27,-83.5),(29,-83.5),(29,-84),(29.5,-84),(29.5,-85),(29,-85),(29,-86),(29.5,-86),(29.5,-86.5),(30,-86.5),(30,-89),(28.5,-89),(28.5,-89.5),(28.5,-91.5),(29,-91.5),(29,-93.5),(29.5,-93.5),(29.5,-94),(29,-94),(29,-94.5),(29,-95),(28.5,-95),(28.5,-96),(30.5,-96),(30.5,-95.5),(31.5,-95.5),(31.5,-95),(32.5,-95),(32.5,-95.5),(37,-95.5),(37,-95),(37.5,-95),(37.5,-94.5),(38,-94.5),(38,-94),(38,-93.5),(38.5,-93.5))
     else:
-        raise rmn.FSTDError("Domain "+name+" not found (check in util_score.py)")
+        raise ValueError("Domain "+name+" not found (check in util_score.py)")
 
     poly  = np.array(coord)
     lats  = poly[:,0]

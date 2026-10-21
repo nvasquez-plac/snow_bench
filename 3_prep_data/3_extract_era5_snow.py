@@ -1,4 +1,7 @@
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 from os import environ
 import pdb
 import os 
@@ -6,7 +9,8 @@ import numpy as np
 import pandas as pd 
 import datetime as dt 
 import xarray as xr
-from importlib.machinery import SourceFileLoader
+import runpy
+from types import SimpleNamespace
 import argparse
 import util_extract as ext
 
@@ -28,7 +32,7 @@ args = parser.parse_args()
 configfile = args.configfile
 
 # Load in configuration file as module
-X = SourceFileLoader('', configfile).load_module()
+X = SimpleNamespace(**runpy.run_path(configfile))  # load_module() was removed in Python 3.15
 cfg_exp = X.cfg_exp
 
 # List of experiments of interest

@@ -15,9 +15,13 @@ import os,shutil,pdb,sys
 import datetime as dt
 import numpy as np
 import pandas as pd
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 import xarray as xr
-from importlib.machinery import SourceFileLoader
+import runpy
+from types import SimpleNamespace
 import argparse
 import util_score as util
 
@@ -39,7 +43,7 @@ args = parser.parse_args()
 configfile = args.configfile
 
 # Load in configuration file as module
-X = SourceFileLoader('', configfile).load_module()
+X = SimpleNamespace(**runpy.run_path(configfile))  # load_module() was removed in Python 3.15
 cfg_exp = X.cfg_exp
 
 #Reference Directory
@@ -80,7 +84,7 @@ if(args.date_beg is None or args.date_end is None):
 # Load config file
 config_snow = X.dir_git+"/1_config/config_snow.py"
 # Load info in config file
-X2 = SourceFileLoader('', config_snow).load_module()
+X2 = SimpleNamespace(**runpy.run_path(config_snow))  # load_module() was removed in Python 3.15
 dic_var = X2.dic_var
 dic_fac_max = X2.dic_fac_max
 

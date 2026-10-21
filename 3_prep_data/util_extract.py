@@ -5,7 +5,10 @@ import pdb
 import numpy as np
 from numpy import sin, cos, radians, sqrt, arcsin
 import geopandas as gpd
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 from os import environ
 import os,sys,glob 
 import pandas as pd 

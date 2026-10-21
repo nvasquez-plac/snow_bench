@@ -1,4 +1,7 @@
-import fstd2nc
+try:
+    import fstd2nc  # ECCC lib, only needed to read FST files; does not build on macOS
+except ImportError:
+    fstd2nc = None
 from os import environ
 import pdb
 import os 
@@ -9,7 +12,8 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import xarray as xr
-from importlib.machinery import SourceFileLoader
+import runpy
+from types import SimpleNamespace
 import argparse
 import util_score as util
 import shutil
@@ -37,7 +41,7 @@ args = parser.parse_args()
 configfile = args.configfile
 
 # Load in configuration file as module
-X = SourceFileLoader('', configfile).load_module()
+X = SimpleNamespace(**runpy.run_path(configfile))  # load_module() was removed in Python 3.15
 cfg_exp = X.cfg_exp
 
 #Reference Directory
@@ -78,7 +82,7 @@ n_processes = args.n_processes
 # Load config file
 config_snow = X.dir_git+"/1_config/config_snow.py"
 # Load info in config file
-X2 = SourceFileLoader('', config_snow).load_module()
+X2 = SimpleNamespace(**runpy.run_path(config_snow))  # load_module() was removed in Python 3.15
 dic_var = X2.dic_var
 dic_varname = X2.dic_varname
 dic_units = X2.dic_var_units
@@ -166,11 +170,16 @@ for reg in list_reg:
         
         # Execute tasks in parallel
         if tasks:
-            with Pool(processes=n_processes) as pool:
-                if var not in ['TGRD','WSOL']:
-                    results = pool.map(util.plot_station_timeseries, tasks)
-                else: # Soil variables
-                    results = pool.map(util.plot_station_timeseries_soil, tasks)
+            if var not in ['TGRD','WSOL']:
+                func = util.plot_station_timeseries
+            else: # Soil variables
+                func = util.plot_station_timeseries_soil
+            if n_processes > 1:
+                with Pool(processes=n_processes) as pool:
+                    results = pool.map(func, tasks)
+            else:
+                # Serial: use -n 1 on macOS, where multiprocessing workers crash or re-run the script
+                results = [func(t) for t in tasks]
             
             # Print results summary
             successful = sum(1 for r in results if "Successfully created" in r)

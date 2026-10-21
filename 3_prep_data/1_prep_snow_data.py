@@ -19,7 +19,8 @@ import pandas as pd
 import datetime as dt 
 import xarray as xr
 import argparse
-from importlib.machinery import SourceFileLoader
+import runpy
+from types import SimpleNamespace
 import util_extract as ext
 
 
@@ -35,7 +36,7 @@ args = parser.parse_args()
 configfile = args.configfile
 
 # Load in configuration file as module
-X = SourceFileLoader('', configfile).load_module()
+X = SimpleNamespace(**runpy.run_path(configfile))  # load_module() was removed in Python 3.15
 cfg_exp = X.cfg_exp
 
 dir_eval = X.dir_analysis
@@ -55,7 +56,7 @@ date_end = args.date_end
 # Load config file
 config_snow = X.dir_git+"/1_config/config_snow.py"
 # Load info in config file
-X2= SourceFileLoader('', config_snow).load_module()
+X2= SimpleNamespace(**runpy.run_path(config_snow))  # load_module() was removed in Python 3.15
 dic_snow_db = X2.dic_snow_data
 
 
